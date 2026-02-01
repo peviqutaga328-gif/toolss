@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>এআই সোশ্যাল মিডিয়া রাইটার</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-indigo-50 min-h-screen flex items-center justify-center p-6">
+
+    <div class="bg-white p-8 rounded-3xl shadow-2xl w-full max-w-lg border border-white">
+        <header class="text-center mb-8">
+            <h1 class="text-3xl font-black text-indigo-700 mb-2">এআই ম্যাজিক রাইটার ✨</h1>
+            <p class="text-gray-500 text-sm">গিটহাব পেজে লাইভ আনলিমিটেড টুলস</p>
+        </header>
+
+        <textarea id="aiInput" class="w-full p-4 bg-slate-50 border-2 border-slate-100 rounded-2xl focus:border-indigo-400 outline-none transition-all mb-4" rows="4" placeholder="আপনার পোস্টের বিষয় লিখুন..."></textarea>
+        
+        <button onclick="askAI()" id="btn" class="w-full bg-indigo-600 text-white font-black py-4 rounded-2xl hover:bg-indigo-700 shadow-lg transition-all">ম্যাজিক জেনারেট করুন 🚀</button>
+
+        <div id="loader" class="hidden mt-6 text-center">
+            <p class="text-indigo-600 animate-pulse font-bold">এআই ভাবছে... 🤖</p>
+        </div>
+
+        <div id="resultBox" class="hidden mt-6 p-6 bg-indigo-50 rounded-2xl border border-indigo-100">
+            <p id="outputText" class="text-gray-800 leading-relaxed whitespace-pre-wrap"></p>
+            <button onclick="copyBtn()" class="mt-4 text-xs font-bold text-indigo-600 underline">কপি করুন 📋</button>
+        </div>
+    </div>
+
+    <script>
+        async function askAI() {
+            const topic = document.getElementById('aiInput').value;
+            if(!topic) return alert("কিছু লিখুন!");
+
+            const btn = document.getElementById('btn');
+            const loader = document.getElementById('loader');
+            const resultBox = document.getElementById('resultBox');
+            const output = document.getElementById('outputText');
+
+            btn.disabled = true;
+            loader.classList.remove('hidden');
+            resultBox.classList.add('hidden');
+
+            try {
+                // আপনার Hugging Face API ব্যবহার করছি সরাসরি
+                const response = await fetch("https://api-inference.huggingface.co/models/mistralai/Mistral-7B-Instruct-v0.2", {
+                    method: "POST",
+                    headers: {
+                        "Authorization": "Bearer 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",
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify({
+                        inputs: `<s>[INST] Write 3 short viral Bengali social media captions with hashtags about: ${topic} [/INST]`,
+                        parameters: { max_new_tokens: 300, temperature: 0.8 }
+                    })
+                });
+
+                const data = await response.json();
+                let text = data[0].generated_text.split('[/INST]')[1] || data[0].generated_text;
+                
+                output.innerText = text.trim();
+                resultBox.classList.remove('hidden');
+            } catch (err) {
+                alert("দুঃখিত, এপিআই কানেক্ট হচ্ছে না। ইন্টারনেট চেক করে আবার চেষ্টা করুন।");
+            } finally {
+                btn.disabled = false;
+                loader.classList.add('hidden');
+            }
+        }
+
+        function copyBtn() {
+            navigator.clipboard.writeText(document.getElementById('outputText').innerText);
+            alert("কপি হয়েছে!");
+        }
+    </script>
+</body>
+</html>
